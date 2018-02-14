@@ -3,10 +3,12 @@
  * External dependencies
  */
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 import scrollTo from 'lib/scroll-to';
 import { localize } from 'i18n-calypso';
+import { get } from 'lodash';
 
 /**
  * Internal dependencies
@@ -38,12 +40,27 @@ import {
 	getSiteTimezoneValue,
 } from 'state/selectors';
 import { adjustMoment } from '../activity-log/utils';
-import { getSiteSlug } from 'state/sites/selectors';
+import { getSiteSlug, getSite } from 'state/sites/selectors';
+import { updatePlugin } from 'state/plugins/installed/actions';
+import { getPluginOnSite } from 'state/plugins/installed/selectors';
+import QueryJetpackPlugins from 'components/data/query-jetpack-plugins/';
 
 class ActivityLogItem extends Component {
+	static propTypes = {
+		siteId: PropTypes.number.isRequired,
+
+		// Connected props
+		siteSlug: PropTypes.string.isRequired,
+
+		// localize
+		translate: PropTypes.func.isRequired,
+	};
+
 	confirmBackup = () => this.props.confirmBackup( this.props.activity.rewindId );
 
 	confirmRewind = () => this.props.confirmRewind( this.props.activity.rewindId );
+
+	updatePlugin = () => this.props.updatePlugin( this.props.plugin );
 
 	renderHeader() {
 		const {
@@ -78,9 +95,29 @@ class ActivityLogItem extends Component {
 		const {
 			hideRestore,
 			activity: { activityIsRewindable, activityName, activityMeta },
+			plugin,
+			translate,
 		} = this.props;
 
 		switch ( activityName ) {
+			case 'plugin__update_available':
+				return (
+					activityMeta.pluginSlug &&
+					plugin &&
+					plugin.update && (
+						<div>
+							<QueryJetpackPlugins siteIds={ [ this.props.siteId ] } />
+							<Button
+								primary
+								compact
+								className="activity-log-item__action"
+								onClick={ this.updatePlugin }
+							>
+								{ translate( 'Update plugin' ) }
+							</Button>
+						</div>
+					)
+				);
 			case 'plugin__update_failed':
 			case 'rewind__scan_result_found':
 				return this.renderHelpAction();
@@ -249,14 +286,19 @@ class ActivityLogItem extends Component {
 	}
 }
 
-const mapStateToProps = ( state, { activityId, siteId } ) => ( {
-	activity: getActivityLog( state, siteId, activityId ),
-	gmtOffset: getSiteGmtOffset( state, siteId ),
-	mightBackup: activityId && activityId === getRequestedBackup( state, siteId ),
-	mightRewind: activityId && activityId === getRequestedRewind( state, siteId ),
-	timezone: getSiteTimezoneValue( state, siteId ),
-	siteSlug: getSiteSlug( state, siteId ),
-} );
+const mapStateToProps = ( state, { activityId, siteId } ) => {
+	const activity = getActivityLog( state, siteId, activityId );
+	return {
+		activity,
+		gmtOffset: getSiteGmtOffset( state, siteId ),
+		mightBackup: activityId && activityId === getRequestedBackup( state, siteId ),
+		mightRewind: activityId && activityId === getRequestedRewind( state, siteId ),
+		timezone: getSiteTimezoneValue( state, siteId ),
+		siteSlug: getSiteSlug( state, siteId ),
+		site: getSite( state, siteId ),
+		plugin: getPluginOnSite( state, siteId, get( activity.activityMeta, 'pluginSlug', '' ) ),
+	};
+};
 
 const mapDispatchToProps = ( dispatch, { activityId, siteId } ) => ( {
 	createBackup: () =>
@@ -310,6 +352,7 @@ const mapDispatchToProps = ( dispatch, { activityId, siteId } ) => ( {
 			recordTracksEvent( 'calypso_activitylog_event_get_help', { activity_name: activityName } )
 		),
 	trackFixCreds: () => dispatch( recordTracksEvent( 'calypso_activitylog_event_fix_credentials' ) ),
+	updatePlugin: plugin => dispatch( updatePlugin( siteId, plugin ) ),
 } );
 
 export default connect( mapStateToProps, mapDispatchToProps )( localize( ActivityLogItem ) );
