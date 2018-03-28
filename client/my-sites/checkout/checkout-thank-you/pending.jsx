@@ -11,6 +11,7 @@ import PropTypes from 'prop-types';
 /**
  * Internal dependencies
  */
+import QuerySourcePaymentTransactionDetail from 'components/data/query-source-payment-transaction-detail';
 import { getSourcePaymentTransactionDetail } from 'state/selectors';
 
 class CheckoutPending extends PureComponent {
@@ -39,6 +40,7 @@ class CheckoutPending extends PureComponent {
 		// Replace this placeholder by the real one
 		return (
 			<div>
+				<QuerySourcePaymentTransactionDetail orderId={ orderId } pollIntervalMs={ 5000 } />
 				<p>Waiting for the payment result of { orderId }</p>
 			</div>
 		);
