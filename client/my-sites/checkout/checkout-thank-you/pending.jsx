@@ -7,11 +7,14 @@ import page from 'page';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { localize } from 'i18n-calypso';
 
 /**
  * Internal dependencies
  */
 import QuerySourcePaymentTransactionDetail from 'components/data/query-source-payment-transaction-detail';
+import EmptyContent from 'components/empty-content';
+import Main from 'components/main';
 import { getSourcePaymentTransactionDetail } from 'state/selectors';
 
 class CheckoutPending extends PureComponent {
@@ -34,19 +37,22 @@ class CheckoutPending extends PureComponent {
 	}
 
 	render() {
-		const { orderId } = this.props;
+		const { orderId, translate } = this.props;
 
-		// TODO:
-		// Replace this placeholder by the real one
 		return (
-			<div>
+			<Main className="checkout-thank-you__pending">
 				<QuerySourcePaymentTransactionDetail orderId={ orderId } pollIntervalMs={ 5000 } />
-				<p>Waiting for the payment result of { orderId }</p>
-			</div>
+				<EmptyContent
+					illustration={ '/calypso/images/illustrations/almost-there.svg' }
+					illustrationWidth={ 500 }
+					title={ 'Processing …' }
+					line={ translate( 'Please wait while we are processing your order.' ) }
+				/>
+			</Main>
 		);
 	}
 }
 
 export default connect( ( state, props ) => ( {
 	paymentInfo: getSourcePaymentTransactionDetail( state, props.orderId ),
-} ) )( CheckoutPending );
+} ) )( localize( CheckoutPending ) );
