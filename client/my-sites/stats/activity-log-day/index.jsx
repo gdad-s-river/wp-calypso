@@ -26,7 +26,10 @@ class ActivityLogDay extends Component {
 	static defaultProps = {
 		disableRestore: false,
 		disableBackup: false,
-		isRewindActive: true,
+		rewindState: {
+			state: 'unavailable',
+			canAutoconfigure: false,
+		},
 	};
 
 	state = {
@@ -105,7 +108,7 @@ class ActivityLogDay extends Component {
 			disableBackup,
 			disableRestore,
 			isDiscardedPerspective,
-			isRewindActive,
+			rewindState,
 			isToday,
 			logs,
 			requestedBackupId,
@@ -144,9 +147,10 @@ class ActivityLogDay extends Component {
 						activityId={ log.activityId }
 						disableRestore={ disableRestore }
 						disableBackup={ disableBackup }
-						hideRestore={ ! isRewindActive }
+						hideRestore={ 'active' !== rewindState.state }
 						isDiscarded={ isDiscarded ? isDiscarded( log.activityTs ) : log.activityIsDiscarded }
 						siteId={ siteId }
+						rewindState={ rewindState }
 					/>
 				) ) }
 			</FoldableCard>

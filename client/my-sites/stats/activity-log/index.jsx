@@ -552,7 +552,7 @@ class ActivityLog extends Component {
 												applySiteOffset={ this.applySiteOffset }
 												disableRestore={ disableRestore }
 												disableBackup={ disableBackup }
-												isRewindActive={ 'active' === rewindState.state }
+												rewindState={ rewindState }
 												logs={ events }
 												closeDialog={ this.handleCloseDialog }
 												siteId={ siteId }

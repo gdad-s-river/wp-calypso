@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import classNames from 'classnames';
 import scrollTo from 'lib/scroll-to';
 import { localize } from 'i18n-calypso';
+import { get } from 'lodash';
 
 /**
  * Internal dependencies
@@ -149,9 +150,13 @@ class ActivityLogItem extends Component {
 			className="activity-log-item__fix-creds"
 			primary
 			compact
-			href={ `/start/rewind-setup/?siteId=${ this.props.siteId }&siteSlug=${
-				this.props.siteSlug
-			}` }
+			href={
+				get( this.props.rewindState, 'canAutoconfigure', false )
+					? `/start/rewind-auto-config/?blogid=${ this.props.siteId }&siteSlug=${
+							this.props.siteSlug
+						}`
+					: `/start/rewind-setup/?siteId=${ this.props.siteId }&siteSlug=${ this.props.siteSlug }`
+			}
 			onClick={ this.props.trackFixCreds }
 		>
 			{ this.props.translate( 'Fix credentials' ) }
