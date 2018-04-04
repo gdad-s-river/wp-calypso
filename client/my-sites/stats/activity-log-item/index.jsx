@@ -234,7 +234,11 @@ class ActivityLogItem extends Component {
 				) }
 				<div className={ classes }>
 					<div className="activity-log-item__type">
-						<div className="activity-log-item__time">{ adjustedTime.format( 'LT' ) }</div>
+						<div className="activity-log-item__time">
+							{ adjustedTime.format( 'Do' ) }
+							<br />
+							{ adjustedTime.format( 'LT' ) }
+						</div>
 						<ActivityIcon activityIcon={ activityIcon } activityStatus={ activityStatus } />
 					</div>
 					<FoldableCard

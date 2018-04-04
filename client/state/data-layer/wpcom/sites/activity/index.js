@@ -181,10 +181,11 @@ export const handleActivityLogRequest = action => {
 export const receiveActivityLog = ( action, data ) => {
 	const stateUpdate = activityLogUpdate(
 		action.siteId,
-		data.items,
+		data.items.filter( i => i.hasOwnProperty( 'rewindId' ) ),
 		data.totalItems,
 		data.oldestItemTs,
-		action.params
+		action.params,
+		{ doMerge: action.params.hasOwnProperty( 'searchAfter' ) }
 	);
 
 	// if we have no further pages to fetch (nothing more to do)
@@ -214,7 +215,7 @@ export default {
 			onError: receiveActivityLogError,
 			fromApi,
 		} ),
-		continuePolling,
+		// continuePolling,
 	],
-	[ ACTIVITY_LOG_WATCH ]: [ togglePolling ],
+	// [ ACTIVITY_LOG_WATCH ]: [ togglePolling ],
 };
