@@ -18,6 +18,7 @@ const statsLocationsByTab = {
 	month: '/stats/month/',
 	year: '/stats/year/',
 	insights: '/stats/insights/',
+	googleMyBusiness: '/google-my-business/stats/',
 };
 
 export function getSiteFragment( path ) {
@@ -132,7 +133,7 @@ export function getStatsPathForTab( tab, siteIdOrSlug ) {
 		return getStatsDefaultSitePage( siteIdOrSlug );
 	}
 
-	if ( tab === 'insights' && ! siteIdOrSlug ) {
+	if ( tab === 'insights' || ( tab === 'googleMyBusiness' && ! siteIdOrSlug ) ) {
 		// Insights only supports single-site - Link to an overview for now
 		return getStatsDefaultSitePage();
 	}
