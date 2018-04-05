@@ -248,6 +248,14 @@ const webpackConfig = {
 if ( calypsoEnv === 'desktop' ) {
 	// no chunks or dll here, just one big file for the desktop app
 	webpackConfig.output.filename = '[name].js';
+	// turn off auto splits as much as we can
+	webpackConfig.optimization.splitChunks = {
+		maxAsyncRequests: 1,
+		maxInitialRequests: 1,
+		cacheGroups: { default: false },
+	};
+
+	webpackConfig.optimization.runtimeChunk = false;
 } else {
 	// jquery is only needed in the build for the desktop app
 	// see electron bug: https://github.com/atom/electron/issues/254
