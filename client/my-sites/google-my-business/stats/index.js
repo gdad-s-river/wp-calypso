@@ -30,7 +30,7 @@ class GoogleMyBusinessStats extends Component {
 		const { translate, siteSlug, siteId } = this.props;
 
 		return (
-			<Main className="gmb-select-business-type" wideLayout>
+			<Main wideLayout>
 				<DocumentHead title={ translate( 'Stats' ) } />
 				<StatsFirstView />
 				<SidebarNavigation />
