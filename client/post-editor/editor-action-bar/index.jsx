@@ -47,7 +47,7 @@ class EditorActionBar extends Component {
 		// update based on post changes. Flux changes are passed down from parent components.
 		const multiUserSite = this.props.site && ! this.props.site.single_user_site;
 		const isPasswordProtected = utils.getVisibility( this.props.post ) === 'password';
-		const { isPostPrivate, postAuthor, podcastingEnabled } = this.props;
+		const { isPostPrivate, postAuthor, isPodcastEpisode } = this.props;
 
 		return (
 			<div className="editor-action-bar">
@@ -69,7 +69,7 @@ class EditorActionBar extends Component {
 						this.props.type === 'post' &&
 						! isPasswordProtected &&
 						! isPostPrivate && <EditorSticky /> }
-					{ podcastingEnabled && (
+					{ isPodcastEpisode && (
 						<Gridicon icon="microphone" className="editor-action-bar__podcasting-icon" />
 					) }
 					{ utils.isPublished( this.props.savedPost ) && (
@@ -106,10 +106,10 @@ export default connect( state => {
 	const type = getEditedPostValue( state, siteId, postId, 'type' );
 
 	const podcastingCategoryId = getPodcastingCategoryId( state, siteId );
-	let podcastingEnabled = false;
+	let isPodcastEpisode = false;
 	if ( podcastingCategoryId ) {
 		const postCategories = getEditedPostValue( state, siteId, postId, 'categories' );
-		podcastingEnabled = find( postCategories, { ID: podcastingCategoryId } ) !== undefined;
+		isPodcastEpisode = find( postCategories, { ID: podcastingCategoryId } ) !== undefined;
 	}
 
 	return {
@@ -117,6 +117,6 @@ export default connect( state => {
 		postId,
 		post,
 		type,
-		podcastingEnabled,
+		isPodcastEpisode,
 	};
 } )( EditorActionBar );
