@@ -13,13 +13,13 @@ import { get, includes, isEmpty } from 'lodash';
  * Internal dependencies
  */
 import ActivityLogBanner from 'my-sites/stats/activity-log-banner';
-import ActivityLogDayPlaceholder from '../activity-log-day/placeholder';
 import ActivityLogItem from '../activity-log-item';
 import ActivityLogSwitch from '../activity-log-switch';
 import Banner from 'components/banner';
 import DocumentHead from 'components/data/document-head';
 import EmptyContent from 'components/empty-content';
 import ErrorBanner from '../activity-log-banner/error-banner';
+import FoldableCard from 'components/foldable-card';
 import JetpackColophon from 'components/jetpack-colophon';
 import Main from 'components/main';
 import Pagination from 'components/pagination';
@@ -319,9 +319,18 @@ class ActivityLog extends Component {
 			/>
 		) : (
 			<section className="activity-log__wrapper">
-				<ActivityLogDayPlaceholder />
-				<ActivityLogDayPlaceholder />
-				<ActivityLogDayPlaceholder />
+				{ [ 1, 2, 3 ].map( i => (
+					<FoldableCard
+						key={ i }
+						className="activity-log-day__placeholder"
+						header={
+							<div>
+								<div className="activity-log-day__day" />
+								<div className="activity-log-day__events" />
+							</div>
+						}
+					/>
+				) ) }
 			</section>
 		);
 
