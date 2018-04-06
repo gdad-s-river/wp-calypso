@@ -4,14 +4,13 @@
  * Internal dependencies
  */
 import {
-	receiveJetpackOnboardingCredentials,
-	requestJetpackOnboardingSettings,
-	saveJetpackOnboardingSettings,
-	saveJetpackOnboardingSettingsSuccess,
-	updateJetpackOnboardingSettings,
+	regeneratePostByEmail,
+	requestJetpackSettings,
+	saveJetpackSettings,
+	saveJetpackSettingsSuccess,
+	updateJetpackSettings,
 } from '../actions';
 import {
-	JETPACK_ONBOARDING_CREDENTIALS_RECEIVE,
 	JETPACK_ONBOARDING_SETTINGS_REQUEST,
 	JETPACK_ONBOARDING_SETTINGS_SAVE,
 	JETPACK_ONBOARDING_SETTINGS_SAVE_SUCCESS,
@@ -19,28 +18,10 @@ import {
 } from 'state/action-types';
 
 describe( 'actions', () => {
-	describe( 'receiveJetpackOnboardingCredentials()', () => {
-		test( 'should return a jetpack onboarding credentials receive action object', () => {
-			const credentials = {
-				token: 'abcd1234',
-				siteUrl: 'http://yourgroovydomain.com/',
-				userEmail: 'somebody@yourgroovydomain.com',
-			};
-			const siteId = 12345678;
-			const action = receiveJetpackOnboardingCredentials( siteId, credentials );
-
-			expect( action ).toEqual( {
-				type: JETPACK_ONBOARDING_CREDENTIALS_RECEIVE,
-				siteId,
-				credentials,
-			} );
-		} );
-	} );
-
-	describe( 'requestJetpackOnboardingSettings()', () => {
+	describe( 'requestJetpackSettings()', () => {
 		test( 'should return a jetpack settings request action object', () => {
 			const siteId = 12345678;
-			const action = requestJetpackOnboardingSettings( siteId );
+			const action = requestJetpackSettings( siteId );
 
 			expect( action ).toEqual( {
 				type: JETPACK_ONBOARDING_SETTINGS_REQUEST,
@@ -54,14 +35,14 @@ describe( 'actions', () => {
 		} );
 	} );
 
-	describe( 'saveJetpackOnboardingSettings()', () => {
+	describe( 'saveJetpackSettings()', () => {
 		test( 'should return a jetpack settings save action object', () => {
 			const settings = {
 				siteTitle: 'My awesome site title',
 				siteDescription: 'Not just another WordPress site',
 			};
 			const siteId = 12345678;
-			const action = saveJetpackOnboardingSettings( siteId, settings );
+			const action = saveJetpackSettings( siteId, settings );
 
 			expect( action ).toEqual( {
 				type: JETPACK_ONBOARDING_SETTINGS_SAVE,
@@ -76,14 +57,14 @@ describe( 'actions', () => {
 		} );
 	} );
 
-	describe( 'saveJetpackOnboardingSettingsSuccess()', () => {
+	describe( 'saveJetpackSettingsSuccess()', () => {
 		test( 'should return a jetpack onboarding settings save action success object', () => {
 			const settings = {
 				siteTitle: 'My awesome site title',
 				siteDescription: 'Not just another WordPress site',
 			};
 			const siteId = 12345678;
-			const action = saveJetpackOnboardingSettingsSuccess( siteId, settings );
+			const action = saveJetpackSettingsSuccess( siteId, settings );
 
 			expect( action ).toEqual( {
 				type: JETPACK_ONBOARDING_SETTINGS_SAVE_SUCCESS,
@@ -93,20 +74,31 @@ describe( 'actions', () => {
 		} );
 	} );
 
-	describe( 'updateJetpackOnboardingSettings()', () => {
+	describe( 'updateJetpackSettings()', () => {
 		test( 'should return a jetpack settings update action object', () => {
 			const settings = {
 				siteTitle: 'My awesome site title',
 				siteDescription: 'Not just another WordPress site',
 			};
 			const siteId = 12345678;
-			const action = updateJetpackOnboardingSettings( siteId, settings );
+			const action = updateJetpackSettings( siteId, settings );
 
 			expect( action ).toEqual( {
 				type: JETPACK_ONBOARDING_SETTINGS_UPDATE,
 				siteId,
 				settings,
 			} );
+		} );
+	} );
+
+	describe( 'regeneratePostByEmail()', () => {
+		test( 'should return a jetpack settings update action object with settings set to regenerate post-by-email', () => {
+			const siteId = 12345678;
+			const action = regeneratePostByEmail( siteId );
+
+			expect( action ).toEqual(
+				saveJetpackSettings( siteId, { post_by_email_address: 'regenerate' } )
+			);
 		} );
 	} );
 } );

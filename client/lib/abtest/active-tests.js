@@ -64,18 +64,6 @@ export default {
 		defaultVariation: 'hide',
 		allowExistingUsers: true,
 	},
-	domainSuggestionTestV6: {
-		datestamp: '20180315',
-		variations: {
-			group_0: 1, // Default group
-			group_1: 1000,
-			group_2: 1000,
-			group_3: 1000,
-			group_4: 1000,
-		},
-		defaultVariation: 'group_0',
-		allowExistingUsers: true,
-	},
 	upgradePricingDisplayV2: {
 		datestamp: '20180305',
 		variations: {
@@ -83,15 +71,6 @@ export default {
 			modified: 50,
 		},
 		defaultVariation: 'original',
-	},
-	domainSearchPrefill: {
-		datestamp: '20180315',
-		variations: {
-			noPrefill: 50,
-			withSiteTitle: 50,
-		},
-		defaultVariation: 'noPrefill',
-		allowExistingUsers: true,
 	},
 	redesignedSidebarBanner: {
 		datestamp: '20180222',
@@ -110,22 +89,26 @@ export default {
 		defaultVariation: 'control',
 		allowExistingUsers: true,
 	},
-	inlineHelpWithContactForm: {
-		datestamp: '20180306',
+	mobilePlansTablesOnSignup: {
+		datestamp: '20180330',
 		variations: {
-			original: 0,
-			inlinecontact: 100,
+			original: 50,
+			vertical: 50,
 		},
 		defaultVariation: 'original',
 		allowExistingUsers: true,
 	},
-	mobilePlansTablesOnSignup: {
-		datestamp: '20180320',
+	domainSuggestionKrakenV313: {
+		datestamp: '20180329',
 		variations: {
-			original: 50,
-			mobile: 50,
+			group_0: 1, // Default group
+			group_1: 1000,
+			group_2: 1000,
+			group_3: 1000,
+			group_4: 1000,
+			group_5: 1000,
 		},
-		defaultVariation: 'original',
+		defaultVariation: 'group_0',
 		allowExistingUsers: true,
 	},
 };

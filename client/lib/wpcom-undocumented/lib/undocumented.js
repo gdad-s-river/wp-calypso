@@ -1236,12 +1236,6 @@ Undocumented.prototype.readA8cConversations = function( query, fn ) {
 	return this.wpcom.req.get( '/read/conversations', params, fn );
 };
 
-Undocumented.prototype.readFeed = function( query, fn ) {
-	var params = omit( query, 'ID' );
-	debug( '/read/feed' );
-	return this.wpcom.req.get( '/read/feed/' + encodeURIComponent( query.ID ), params, fn );
-};
-
 Undocumented.prototype.discoverFeed = function( query, fn ) {
 	debug( '/read/feed' );
 	return this.wpcom.req.get( '/read/feed/', query, fn );
@@ -2445,6 +2439,22 @@ Undocumented.prototype.dismissNPSSurvey = function( surveyName, fn ) {
  */
 Undocumented.prototype.checkNPSSurveyEligibility = function( fn ) {
 	return this.wpcom.req.get( { path: '/nps' }, { apiVersion: '1.2' }, {}, fn );
+};
+
+/**
+ * Send the optional feedback for the NPS Survey.
+ * @param {string}   surveyName   The name of the NPS survey being submitted
+ * @param {string}   feedback     The content
+ * @param {Function} fn           The callback function
+ * @returns {Promise} A promise
+ */
+Undocumented.prototype.sendNPSSurveyFeedback = function( surveyName, feedback, fn ) {
+	return this.wpcom.req.post(
+		{ path: `/nps/${ surveyName }` },
+		{ apiVersion: '1.2' },
+		{ feedback },
+		fn
+	);
 };
 
 /**

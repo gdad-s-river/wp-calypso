@@ -6,8 +6,8 @@
 import { http } from 'state/data-layer/wpcom-http/actions';
 import {
 	MAX_WOOCOMMERCE_INSTALL_RETRIES,
-	requestJetpackOnboardingSettings,
-	saveJetpackOnboardingSettings,
+	requestJetpackSettings,
+	saveJetpackSettings,
 	handleSaveSuccess,
 	announceRequestFailure,
 	announceSaveFailure,
@@ -18,12 +18,13 @@ import {
 	JETPACK_ONBOARDING_SETTINGS_SAVE,
 	JETPACK_ONBOARDING_SETTINGS_UPDATE,
 } from 'state/action-types';
+import { normalizeSettings } from 'state/jetpack/settings/utils';
 import {
-	saveJetpackOnboardingSettingsSuccess,
-	updateJetpackOnboardingSettings,
+	saveJetpackSettingsSuccess,
+	updateJetpackSettings,
 } from 'state/jetpack-onboarding/actions';
 
-describe( 'requestJetpackOnboardingSettings()', () => {
+describe( 'requestJetpackSettings()', () => {
 	const dispatch = jest.fn();
 	const token = 'abcd1234';
 	const userEmail = 'example@yourgroovydomain.com';
@@ -35,7 +36,7 @@ describe( 'requestJetpackOnboardingSettings()', () => {
 	};
 
 	test( 'should dispatch an action for a GET HTTP request to fetch Jetpack settings', () => {
-		requestJetpackOnboardingSettings( { dispatch }, action );
+		requestJetpackSettings( { dispatch }, action );
 
 		expect( dispatch ).toHaveBeenCalledWith(
 			http(
@@ -63,7 +64,7 @@ describe( 'requestJetpackOnboardingSettings()', () => {
 		};
 		const actionWithAuth = { ...action, query };
 
-		requestJetpackOnboardingSettings( { dispatch }, actionWithAuth );
+		requestJetpackSettings( { dispatch }, actionWithAuth );
 
 		expect( dispatch ).toHaveBeenCalledWith(
 			http(
@@ -90,12 +91,14 @@ describe( 'announceRequestFailure()', () => {
 
 	test( 'should trigger an error notice with an action button when request fails for an unconnected site', () => {
 		const getState = () => ( {
-			jetpackOnboarding: {
-				credentials: {
-					[ siteId ]: {
-						siteUrl,
-						token: 'abcd1234',
-						userEmail: 'example@yourgroovydomain.com',
+			jetpack: {
+				onboarding: {
+					credentials: {
+						[ siteId ]: {
+							siteUrl,
+							token: 'abcd1234',
+							userEmail: 'example@yourgroovydomain.com',
+						},
 					},
 				},
 			},
@@ -121,8 +124,10 @@ describe( 'announceRequestFailure()', () => {
 
 	test( 'should trigger an error notice with an action button when request fails for a connected site', () => {
 		const getState = () => ( {
-			jetpackOnboarding: {
-				credentials: {},
+			jetpack: {
+				onboarding: {
+					credentials: {},
+				},
 			},
 			sites: {
 				items: {
@@ -151,11 +156,13 @@ describe( 'announceRequestFailure()', () => {
 
 	test( 'should trigger an error notice without action button if url is missing', () => {
 		const getState = () => ( {
-			jetpackOnboarding: {
-				credentials: {
-					[ siteId ]: {
-						token: 'abcd1234',
-						userEmail: 'example@yourgroovydomain.com',
+			jetpack: {
+				onboarding: {
+					credentials: {
+						[ siteId ]: {
+							token: 'abcd1234',
+							userEmail: 'example@yourgroovydomain.com',
+						},
 					},
 				},
 			},
@@ -178,7 +185,7 @@ describe( 'announceRequestFailure()', () => {
 	} );
 } );
 
-describe( 'saveJetpackOnboardingSettings()', () => {
+describe( 'saveJetpackSettings()', () => {
 	const dispatch = jest.fn();
 	const token = 'abcd1234';
 	const userEmail = 'example@yourgroovydomain.com';
@@ -202,7 +209,7 @@ describe( 'saveJetpackOnboardingSettings()', () => {
 	};
 
 	test( 'should dispatch an action for POST HTTP request to save Jetpack settings, omitting JPO credentials', () => {
-		saveJetpackOnboardingSettings( { dispatch }, action );
+		saveJetpackSettings( { dispatch }, action );
 
 		expect( dispatch ).toHaveBeenCalledWith(
 			http(
@@ -220,7 +227,7 @@ describe( 'saveJetpackOnboardingSettings()', () => {
 			)
 		);
 		expect( dispatch ).toHaveBeenCalledWith(
-			updateJetpackOnboardingSettings( siteId, { onboarding: onboardingSettings } )
+			updateJetpackSettings( siteId, { onboarding: onboardingSettings } )
 		);
 	} );
 } );
@@ -234,10 +241,10 @@ describe( 'handleSaveSuccess()', () => {
 	};
 
 	test( 'should dispatch a save success action upon successful save request', () => {
-		handleSaveSuccess( { dispatch }, { siteId, settings } );
+		handleSaveSuccess( { dispatch }, { siteId }, { data: settings } );
 
 		expect( dispatch ).toHaveBeenCalledWith(
-			expect.objectContaining( saveJetpackOnboardingSettingsSuccess( siteId, settings ) )
+			expect.objectContaining( saveJetpackSettingsSuccess( siteId, settings ) )
 		);
 	} );
 } );
@@ -285,7 +292,7 @@ describe( 'retryOrAnnounceSaveFailure()', () => {
 		message: 'cURL error 28: Operation timed out after 5001 milliseconds with 0 bytes received',
 	};
 
-	test( 'should trigger saveJetpackOnboardingSettings upon first WooCommerce install timeout', () => {
+	test( 'should trigger saveJetpackSettings upon first WooCommerce install timeout', () => {
 		retryOrAnnounceSaveFailure( { dispatch }, action, error );
 
 		expect( dispatch ).toHaveBeenCalledWith(
@@ -336,10 +343,11 @@ describe( 'fromApi', () => {
 		expect( () => fromApi( response ) ).toThrow( 'missing settings' );
 	} );
 
-	test( 'should return data if present', () => {
-		const response = { data: { onboarding: { siteTitle: 'Yet Another Site Title' } } };
-		expect( fromApi( response ) ).toEqual( {
+	test( 'should return normalized data if present', () => {
+		const settings = {
+			jetpack_portfolio: true,
 			onboarding: { siteTitle: 'Yet Another Site Title' },
-		} );
+		};
+		expect( fromApi( { data: settings } ) ).toEqual( normalizeSettings( settings ) );
 	} );
 } );

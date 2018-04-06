@@ -43,8 +43,9 @@ import Main from 'components/main';
 import SitesDropdown from 'components/sites-dropdown';
 import ColorSchemePicker from 'blocks/color-scheme-picker';
 import { successNotice, errorNotice } from 'state/notices/actions';
-import { getLanguage, isLocaleVariant, hasTranslationSet } from 'lib/i18n-utils';
+import { getLanguage, isLocaleVariant, canBeTranslated } from 'lib/i18n-utils';
 import { isRequestingMissingSites } from 'state/selectors';
+import PageViewTracker from 'lib/analytics/page-view-tracker';
 import _user from 'lib/user';
 
 const user = _user();
@@ -117,7 +118,7 @@ const Account = createReactClass( {
 		// TODO: the API should provide a default value, which would make this line obsolete
 		update( this.props.userSettings.settings, colorSchemeKey, value => value || 'default' );
 
-		this.props.recordTracksEvent( 'calypso_color_schemes_select', { colorScheme } );
+		this.props.recordTracksEvent( 'calypso_color_schemes_select', { color_scheme: colorScheme } );
 		this.updateUserSetting( colorSchemeKey, colorScheme );
 	},
 
@@ -153,14 +154,14 @@ const Account = createReactClass( {
 		const locale = this.getUserSetting( 'language' );
 
 		// disable for locales
-		if ( ! locale || ! hasTranslationSet( locale ) ) {
+		if ( ! locale || ! canBeTranslated( locale ) ) {
 			return false;
 		}
 
 		// disable for locale variants with no official GP translation sets
 		if (
 			this.state.localeVariantSelected &&
-			! hasTranslationSet( this.state.localeVariantSelected )
+			! canBeTranslated( this.state.localeVariantSelected )
 		) {
 			return false;
 		}
@@ -168,7 +169,7 @@ const Account = createReactClass( {
 		// if the user hasn't yet selected a language, and the locale variants has no official GP translation set
 		if (
 			typeof this.state.localeVariantSelected !== 'string' &&
-			! hasTranslationSet( this.getUserSetting( 'locale_variant' ) )
+			! canBeTranslated( this.getUserSetting( 'locale_variant' ) )
 		) {
 			return false;
 		}
@@ -266,7 +267,7 @@ const Account = createReactClass( {
 		this.recordClickEvent( 'Save Account Settings Button' );
 		if ( has( unsavedSettings, colorSchemeKey ) ) {
 			this.props.recordTracksEvent( 'calypso_color_schemes_save', {
-				colorScheme: get( unsavedSettings, colorSchemeKey ),
+				color_scheme: get( unsavedSettings, colorSchemeKey ),
 			} );
 		}
 	},
@@ -356,43 +357,6 @@ const Account = createReactClass( {
 		if ( siteId ) {
 			this.updateUserSetting( 'primary_site_ID', siteId );
 		}
-	},
-
-	renderHolidaySnow() {
-		// Note that years and months below are zero indexed
-		const { translate } = this.props;
-		const today = this.props.moment();
-		const startDate = this.props.moment( {
-			year: today.year(),
-			month: 11,
-			day: 1,
-		} );
-		const endDate = this.props.moment( {
-			year: today.year(),
-			month: 0,
-			day: 4,
-		} );
-
-		if ( today.isBefore( startDate, 'day' ) && today.isAfter( endDate, 'day' ) ) {
-			return;
-		}
-
-		return (
-			<FormFieldset>
-				<FormLegend>{ translate( 'Holiday Snow' ) }</FormLegend>
-				<FormLabel>
-					<FormCheckbox
-						checked={ this.getUserSetting( 'holidaysnow' ) }
-						onChange={ this.updateUserSettingCheckbox }
-						disabled={ this.getDisabledState() }
-						id="holidaysnow"
-						name="holidaysnow"
-						onClick={ this.getCheckboxHandler( 'Holiday Snow' ) }
-					/>
-					<span>{ translate( 'Show snowfall on WordPress.com sites.' ) }</span>
-				</FormLabel>
-			</FormFieldset>
-		);
 	},
 
 	renderJoinDate() {
@@ -619,8 +583,6 @@ const Account = createReactClass( {
 						</FormFieldset>
 					) }
 
-				{ this.renderHolidaySnow() }
-
 				<FormButton
 					isSubmitting={ this.state.submittingForm }
 					disabled={ isSubmitButtonDisabled }
@@ -782,6 +744,7 @@ const Account = createReactClass( {
 
 		return (
 			<Main className="account">
+				<PageViewTracker path="/me/account" title="Me > Account Settings" />
 				<MeSidebarNavigation />
 				<ReauthRequired twoStepAuthorization={ twoStepAuthorization } />
 				<Card className="account__settings">

@@ -18,8 +18,13 @@ import {
 } from 'state/action-types';
 import { getSiteUrl, getUnconnectedSiteUrl } from 'state/selectors';
 import {
-	saveJetpackOnboardingSettingsSuccess,
-	updateJetpackOnboardingSettings,
+	filterSettingsByActiveModules,
+	normalizeSettings,
+	sanitizeSettings,
+} from 'state/jetpack/settings/utils';
+import {
+	saveJetpackSettingsSuccess,
+	updateJetpackSettings,
 } from 'state/jetpack-onboarding/actions';
 import { trailingslashit } from 'lib/route';
 
@@ -30,11 +35,13 @@ export const fromApi = response => {
 		throw new Error( 'missing settings' );
 	}
 
-	return response.data;
+	return normalizeSettings( response.data );
 };
 
+const toApi = settings => filterSettingsByActiveModules( sanitizeSettings( settings ) );
+
 const receiveJetpackOnboardingSettings = ( { dispatch }, { siteId }, settings ) => {
-	dispatch( updateJetpackOnboardingSettings( siteId, settings ) );
+	dispatch( updateJetpackSettings( siteId, settings ) );
 };
 
 /**
@@ -45,7 +52,7 @@ const receiveJetpackOnboardingSettings = ( { dispatch }, { siteId }, settings ) 
  * @param   {Object}   action         Redux action
  * @returns {Object}   Dispatched http action
  */
-export const requestJetpackOnboardingSettings = ( { dispatch }, action ) => {
+export const requestJetpackSettings = ( { dispatch }, action ) => {
 	const { siteId, query } = action;
 
 	return dispatch(
@@ -86,12 +93,12 @@ export const announceRequestFailure = ( { dispatch, getState }, { siteId } ) => 
  * @param   {Object} action Redux action
  * @returns {Object} Dispatched http action
  */
-export const saveJetpackOnboardingSettings = ( { dispatch }, action ) => {
+export const saveJetpackSettings = ( { dispatch }, action ) => {
 	const { settings, siteId } = action;
 
 	// We don't want Jetpack Onboarding credentials in our Jetpack Settings Redux state.
 	const settingsWithoutCredentials = omit( settings, [ 'onboarding.jpUser', 'onboarding.token' ] );
-	dispatch( updateJetpackOnboardingSettings( siteId, settingsWithoutCredentials ) );
+	dispatch( updateJetpackSettings( siteId, settingsWithoutCredentials ) );
 
 	return dispatch(
 		http(
@@ -101,7 +108,7 @@ export const saveJetpackOnboardingSettings = ( { dispatch }, action ) => {
 				path: '/jetpack-blogs/' + siteId + '/rest-api/',
 				body: {
 					path: '/jetpack/v4/settings/',
-					body: JSON.stringify( settings ),
+					body: JSON.stringify( toApi( settings ) ),
 					json: true,
 				},
 			},
@@ -110,12 +117,15 @@ export const saveJetpackOnboardingSettings = ( { dispatch }, action ) => {
 	);
 };
 
-// Although we don't use the save success action in any of the reducers,
-// we need to dispatch some action in order to signal to the data layer that
+// We need to dispatch some action in order to signal to the data layer that
 // the save request has finished. Tracking those requests is necessary for
 // displaying an up to date progress indicator for some steps.
-export const handleSaveSuccess = ( { dispatch }, { siteId, settings } ) =>
-	dispatch( saveJetpackOnboardingSettingsSuccess( siteId, settings ) );
+// We also need this to store a regenerated post-by-email address in Redux state.
+export const handleSaveSuccess = (
+	{ dispatch },
+	{ siteId },
+	{ data: { code, message, ...updatedSettings } } // eslint-disable-line no-unused-vars
+) => dispatch( saveJetpackSettingsSuccess( siteId, updatedSettings ) );
 
 export const announceSaveFailure = ( { dispatch }, { siteId } ) =>
 	dispatch(
@@ -159,7 +169,7 @@ export const retryOrAnnounceSaveFailure = ( { dispatch }, action, { message: err
 export default {
 	[ JETPACK_ONBOARDING_SETTINGS_REQUEST ]: [
 		dispatchRequest(
-			requestJetpackOnboardingSettings,
+			requestJetpackSettings,
 			receiveJetpackOnboardingSettings,
 			announceRequestFailure,
 			{
@@ -168,6 +178,6 @@ export default {
 		),
 	],
 	[ JETPACK_ONBOARDING_SETTINGS_SAVE ]: [
-		dispatchRequest( saveJetpackOnboardingSettings, handleSaveSuccess, retryOrAnnounceSaveFailure ),
+		dispatchRequest( saveJetpackSettings, handleSaveSuccess, retryOrAnnounceSaveFailure ),
 	],
 };

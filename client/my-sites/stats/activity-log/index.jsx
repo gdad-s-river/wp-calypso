@@ -24,6 +24,7 @@ import EmptyContent from 'components/empty-content';
 import ErrorBanner from '../activity-log-banner/error-banner';
 import JetpackColophon from 'components/jetpack-colophon';
 import Main from 'components/main';
+import PageViewTracker from 'lib/analytics/page-view-tracker';
 import ProgressBanner from '../activity-log-banner/progress-banner';
 import QueryActivityLog from 'components/data/query-activity-log';
 import QueryRewindState from 'components/data/query-rewind-state';
@@ -594,6 +595,7 @@ class ActivityLog extends Component {
 
 		return (
 			<Main wideLayout>
+				<PageViewTracker path="/stats/activity/:site" title="Stats > Activity" />
 				<DocumentHead title={ translate( 'Stats' ) } />
 				<QueryRewindState siteId={ siteId } />
 				{ '' !== rewindNoThanks && rewindIsNotReady
@@ -646,7 +648,7 @@ export default connect(
 			} ),
 		createBackup: ( siteId, actionId ) =>
 			withAnalytics(
-				recordTracksEvent( 'calypso_activitylog_backup_confirm', { actionId } ),
+				recordTracksEvent( 'calypso_activitylog_backup_confirm', { action_id: actionId } ),
 				rewindBackup( siteId, actionId )
 			),
 		dismissBackup: siteId =>
@@ -661,7 +663,7 @@ export default connect(
 			),
 		rewindRestore: ( siteId, actionId ) =>
 			withAnalytics(
-				recordTracksEvent( 'calypso_activitylog_restore_confirm', { actionId } ),
+				recordTracksEvent( 'calypso_activitylog_restore_confirm', { action_id: actionId } ),
 				rewindRestore( siteId, actionId )
 			),
 	}

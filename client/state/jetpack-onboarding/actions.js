@@ -4,20 +4,13 @@
  * Internal dependencies
  */
 import {
-	JETPACK_ONBOARDING_CREDENTIALS_RECEIVE,
 	JETPACK_ONBOARDING_SETTINGS_REQUEST,
 	JETPACK_ONBOARDING_SETTINGS_SAVE,
 	JETPACK_ONBOARDING_SETTINGS_SAVE_SUCCESS,
 	JETPACK_ONBOARDING_SETTINGS_UPDATE,
 } from 'state/action-types';
 
-export const receiveJetpackOnboardingCredentials = ( siteId, credentials ) => ( {
-	type: JETPACK_ONBOARDING_CREDENTIALS_RECEIVE,
-	siteId,
-	credentials,
-} );
-
-export const requestJetpackOnboardingSettings = ( siteId, query ) => ( {
+export const requestJetpackSettings = ( siteId, query ) => ( {
 	type: JETPACK_ONBOARDING_SETTINGS_REQUEST,
 	siteId,
 	query,
@@ -28,7 +21,7 @@ export const requestJetpackOnboardingSettings = ( siteId, query ) => ( {
 	},
 } );
 
-export const saveJetpackOnboardingSettings = ( siteId, settings ) => ( {
+export const saveJetpackSettings = ( siteId, settings ) => ( {
 	type: JETPACK_ONBOARDING_SETTINGS_SAVE,
 	siteId,
 	settings,
@@ -39,14 +32,23 @@ export const saveJetpackOnboardingSettings = ( siteId, settings ) => ( {
 	},
 } );
 
-export const saveJetpackOnboardingSettingsSuccess = ( siteId, settings ) => ( {
+export const saveJetpackSettingsSuccess = ( siteId, settings ) => ( {
 	type: JETPACK_ONBOARDING_SETTINGS_SAVE_SUCCESS,
 	siteId,
 	settings,
 } );
 
-export const updateJetpackOnboardingSettings = ( siteId, settings ) => ( {
+export const updateJetpackSettings = ( siteId, settings ) => ( {
 	type: JETPACK_ONBOARDING_SETTINGS_UPDATE,
 	siteId,
 	settings,
 } );
+
+/**
+ * Regenerate the target email of Post by Email.
+ *
+ * @param  {Int}     siteId  ID of the site.
+ * @return {Object}          Action object to regenerate the email when dispatched.
+ */
+export const regeneratePostByEmail = siteId =>
+	saveJetpackSettings( siteId, { post_by_email_address: 'regenerate' } );

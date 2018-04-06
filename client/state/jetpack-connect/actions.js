@@ -3,18 +3,23 @@
 /**
  * External dependencies
  */
-
 import debugFactory from 'debug';
-
-const debug = debugFactory( 'calypso:jetpack-connect:actions' );
 import { omit, pick } from 'lodash';
 
 /**
  * Internal dependencies
  */
+import config from 'config';
+import userFactory from 'lib/user';
 import wpcom from 'lib/wp';
-import { recordTracksEvent } from 'state/analytics/actions';
+import { addQueryArgs, externalRedirect } from 'lib/route';
+import { clearPlan, persistSession } from 'jetpack-connect/persistence-utils';
 import { receiveDeletedSite, receiveSite } from 'state/sites/actions';
+import { recordTracksEvent } from 'state/analytics/actions';
+import { REMOTE_PATH_AUTH } from 'jetpack-connect/constants';
+import { SITE_REQUEST_FIELDS, SITE_REQUEST_OPTIONS } from 'state/sites/constants';
+import { urlToSlug } from 'lib/url';
+import { withoutNotice } from 'state/notices/actions';
 import {
 	JETPACK_CONNECT_AUTHORIZE,
 	JETPACK_CONNECT_AUTHORIZE_LOGIN_COMPLETE,
@@ -41,18 +46,13 @@ import {
 	SITE_REQUEST_FAILURE,
 	SITE_REQUEST_SUCCESS,
 } from 'state/action-types';
-import userFactory from 'lib/user';
-import config from 'config';
-import { addQueryArgs, externalRedirect } from 'lib/route';
-import { urlToSlug } from 'lib/url';
-import { clearPlan, persistSession } from 'jetpack-connect/persistence-utils';
-import { REMOTE_PATH_AUTH } from 'jetpack-connect/constants';
 
 /**
- *  Local variables;
+ * Module constants
  */
 const _fetching = {};
 const calypsoEnv = config( 'env_id' );
+const debug = debugFactory( 'calypso:jetpack-connect:actions' );
 
 export function confirmJetpackInstallStatus( status ) {
 	return {
@@ -200,26 +200,23 @@ export function createAccount( userData ) {
 	return dispatch => {
 		dispatch( recordTracksEvent( 'calypso_jpc_create_account', {} ) );
 
-		dispatch( {
-			type: JETPACK_CONNECT_CREATE_ACCOUNT,
-			userData: userData,
-		} );
+		dispatch( { type: JETPACK_CONNECT_CREATE_ACCOUNT } );
 		wpcom.undocumented().usersNew( userData, ( error, data ) => {
 			if ( error ) {
 				dispatch(
 					recordTracksEvent( 'calypso_jpc_create_account_error', {
-						error_code: error.code,
 						error: JSON.stringify( error ),
+						error_code: error.code,
 					} )
 				);
 			} else {
-				dispatch( recordTracksEvent( 'calypso_jpc_create_account_success', {} ) );
+				dispatch( recordTracksEvent( 'calypso_jpc_create_account_success' ) );
 			}
 			dispatch( {
 				type: JETPACK_CONNECT_CREATE_ACCOUNT_RECEIVE,
-				userData: userData,
-				data: data,
-				error: error,
+				data,
+				error,
+				userData,
 			} );
 		} );
 	};
@@ -266,7 +263,7 @@ export function isUserConnected( siteId, siteIsOnSitesList ) {
 				debug( 'user is not connected from', error );
 				if ( siteIsOnSitesList ) {
 					debug( 'removing site from sites list', siteId );
-					dispatch( receiveDeletedSite( siteId, true ) );
+					dispatch( withoutNotice( receiveDeletedSite )( siteId ) );
 				}
 			} );
 	};
@@ -318,10 +315,8 @@ export function authorize( queryObject ) {
 				// Site may not be accessible yet, so force fetch from wpcom
 				return wpcom.site( client_id ).get( {
 					force: 'wpcom',
-					fields:
-						'ID,URL,name,capabilities,jetpack,visible,is_private,is_vip,icon,plan,jetpack_modules,single_user_site,is_multisite,options', //eslint-disable-line max-len
-					options:
-						'is_mapped_domain,unmapped_url,admin_url,is_redirect,is_automated_transfer,allowed_file_types,show_on_front,main_network_site,jetpack_version,software_version,default_post_format,created_at,frame_nonce,publicize_permanently_disabled,page_on_front,page_for_posts,advanced_seo_front_page_description,advanced_seo_title_formats,verification_services_codes,podcasting_archive,is_domain_only,default_sharing_status,default_likes_enabled,wordads,upgraded_filetypes_enabled,videopress_enabled,permalink_structure,gmt_offset,design_type', //eslint-disable-line max-len
+					fields: SITE_REQUEST_FIELDS,
+					options: SITE_REQUEST_OPTIONS,
 				} );
 			} )
 			.then( data => {

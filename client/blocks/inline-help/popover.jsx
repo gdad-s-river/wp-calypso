@@ -13,7 +13,6 @@ import Gridicon from 'gridicons';
 /**
  * Internal Dependencies
  */
-import { abtest } from 'lib/abtest';
 import { recordTracksEvent } from 'state/analytics/actions';
 import Button from 'components/button';
 import Popover from 'components/popover';
@@ -36,7 +35,7 @@ class InlineHelpPopover extends Component {
 		showContactForm: false,
 	};
 
-	openResult = href => {
+	openResult = ( event, href ) => {
 		if ( ! href ) {
 			return;
 		}
@@ -46,7 +45,13 @@ class InlineHelpPopover extends Component {
 			result_url: href,
 		} );
 
-		window.location = href;
+		if ( ! event.metaKey ) {
+			event.preventDefault();
+			window.location = href;
+		} else if ( event.key === 'Enter' ) {
+			event.preventDefault();
+			window.open( href, '_blank' );
+		}
 	};
 
 	moreHelpClicked = () => {
@@ -67,13 +72,12 @@ class InlineHelpPopover extends Component {
 		const { translate } = this.props;
 		const { showContactForm } = this.state;
 		const popoverClasses = { 'is-help-active': showContactForm };
-		const showContactButton = abtest( 'inlineHelpWithContactForm' ) === 'inlinecontact';
 
 		return (
 			<Popover
 				isVisible
 				onClose={ this.props.onClose }
-				position="top right"
+				position="top left"
 				context={ this.props.context }
 				className={ classNames( 'inline-help__popover', popoverClasses ) }
 			>
@@ -100,17 +104,15 @@ class InlineHelpPopover extends Component {
 						{ translate( 'More help' ) }
 					</Button>
 
-					{ showContactButton && (
-						<Button
-							onClick={ this.toggleContactForm }
-							className="inline-help__contact-button"
-							borderless
-						>
-							<Gridicon icon="chat" className="inline-help__gridicon-left" />
-							{ translate( 'Contact us' ) }
-							<Gridicon icon="chevron-right" className="inline-help__gridicon-right" />
-						</Button>
-					) }
+					<Button
+						onClick={ this.toggleContactForm }
+						className="inline-help__contact-button"
+						borderless
+					>
+						<Gridicon icon="chat" className="inline-help__gridicon-left" />
+						{ translate( 'Contact us' ) }
+						<Gridicon icon="chevron-right" className="inline-help__gridicon-right" />
+					</Button>
 
 					<Button
 						onClick={ this.toggleContactForm }
