@@ -173,6 +173,33 @@ export function parseOrderDeltas( payload ) {
 }
 
 /**
+ * Create the correct property and value for a label to be used in a chart
+ *
+ * @param {string} unit - day, week, month, year
+ * @param {object} date - moment object
+ * @param {object} localizedDate - moment object
+ * @return {object}
+ */
+function getChartLabels( unit = '', date, localizedDate ) {
+	if ( ! date.isValid() || ! localizedDate.isValid() ) {
+		return {};
+	}
+	const dayOfWeek = date.toDate().getDay();
+	const isWeekend = 'day' === unit && ( 6 === dayOfWeek || 0 === dayOfWeek );
+	const labelName = `label${ unit.charAt( 0 ).toUpperCase() + unit.slice( 1 ) }`;
+	const formats = {
+		day: 'MMM D',
+		week: 'MMM D',
+		month: 'MMM',
+		year: 'YYYY',
+	};
+	return {
+		[ labelName ]: localizedDate.format( formats[ unit ] ),
+		classNames: isWeekend ? [ 'is-weekend' ] : [],
+	};
+}
+
+/**
  * Return data in a format used by 'components/chart`. The fields array is matched to
  * the data in a single object.
  *
@@ -195,25 +222,10 @@ export function parseOrdersChartData( payload ) {
 			dataRecord[ payload.fields[ i ] ] = value;
 		} );
 
-		dataRecord.labelDay = '';
-		dataRecord.labelWeek = '';
-		dataRecord.labelMonth = '';
-		dataRecord.labelYear = '';
-		dataRecord.classNames = [];
-
 		if ( dataRecord.period ) {
 			const date = parseUnitPeriods( payload.unit, dataRecord.period ).locale( 'en' );
 			const localizedDate = parseUnitPeriods( payload.unit, dataRecord.period );
-			if ( date.isValid() ) {
-				const dayOfWeek = date.toDate().getDay();
-				if ( 'day' === payload.unit && ( 6 === dayOfWeek || 0 === dayOfWeek ) ) {
-					dataRecord.classNames.push( 'is-weekend' );
-				}
-				dataRecord.labelDay = localizedDate.format( 'MMM D' );
-				dataRecord.labelWeek = localizedDate.format( 'MMM D' );
-				dataRecord.labelMonth = localizedDate.format( 'MMM' );
-				dataRecord.labelYear = localizedDate.format( 'YYYY' );
-			}
+			Object.assign( dataRecord, getChartLabels( payload.unit, date, localizedDate ) );
 		}
 
 		dataRecord.period = parseUnitPeriods( payload.unit, dataRecord.period ).format( 'YYYY-MM-DD' );
@@ -251,25 +263,10 @@ function parseChartData( payload, nullAttributes = [] ) {
 			dataRecord[ payload.fields[ i ] ] = value;
 		} );
 
-		dataRecord.labelDay = '';
-		dataRecord.labelWeek = '';
-		dataRecord.labelMonth = '';
-		dataRecord.labelYear = '';
-		dataRecord.classNames = [];
-
 		if ( dataRecord.period ) {
 			const date = moment( dataRecord.period, 'YYYY-MM-DD' ).locale( 'en' );
 			const localizedDate = moment( dataRecord.period, 'YYYY-MM-DD' );
-			if ( date.isValid() ) {
-				const dayOfWeek = date.toDate().getDay();
-				if ( 'day' === payload.unit && ( 6 === dayOfWeek || 0 === dayOfWeek ) ) {
-					dataRecord.classNames.push( 'is-weekend' );
-				}
-				dataRecord.labelDay = localizedDate.format( 'MMM D' );
-				dataRecord.labelWeek = localizedDate.format( 'MMM D' );
-				dataRecord.labelMonth = localizedDate.format( 'MMM' );
-				dataRecord.labelYear = localizedDate.format( 'YYYY' );
-			}
+			Object.assign( dataRecord, getChartLabels( payload.unit, date, localizedDate ) );
 		}
 		return dataRecord;
 	} );
@@ -306,6 +303,8 @@ export function parseStoreStatsReferrers( payload ) {
 	}
 	const { fields } = payload;
 	return payload.data.map( record => {
+		const parsedDate = moment( record.date ).locale( 'en' );
+		const parsedLocalizedDate = moment( record.date );
 		return {
 			date: record.date,
 			data: record.data.map( referrer => {
@@ -316,6 +315,7 @@ export function parseStoreStatsReferrers( payload ) {
 				} );
 				return obj;
 			} ),
+			...getChartLabels( payload.unit, parsedDate, parsedLocalizedDate ),
 		};
 	} );
 }

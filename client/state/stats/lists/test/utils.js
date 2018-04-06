@@ -118,9 +118,6 @@ describe( 'utils', () => {
 				period: '2016-12-31',
 				orders: 0,
 				currency: 'NZD',
-				labelDay: 'Dec 31',
-				labelWeek: 'Dec 31',
-				labelMonth: 'Dec',
 				labelYear: '2016',
 				classNames: [],
 			},
@@ -128,9 +125,6 @@ describe( 'utils', () => {
 				period: '2017-12-31',
 				orders: 14,
 				currency: 'NZD',
-				labelDay: 'Dec 31',
-				labelWeek: 'Dec 31',
-				labelMonth: 'Dec',
 				labelYear: '2017',
 				classNames: [],
 			},
@@ -1832,16 +1826,14 @@ describe( 'utils', () => {
 				const parsedData = normalizers.statsVisits( {
 					fields: [ 'period', 'views', 'visitors' ],
 					data: [ [ '2016-12-22', 0, 0 ], [ '2016-12-23', 10, 6 ] ],
+					unit: 'week',
 				} );
 
 				expect( parsedData ).to.eql( [
 					{
 						classNames: [],
 						comments: null,
-						labelDay: 'Dec 22',
-						labelMonth: 'Dec',
 						labelWeek: 'Dec 22',
-						labelYear: '2016',
 						likes: null,
 						period: '2016-12-22',
 						posts: null,
@@ -1852,10 +1844,7 @@ describe( 'utils', () => {
 					{
 						classNames: [],
 						comments: null,
-						labelDay: 'Dec 23',
-						labelMonth: 'Dec',
 						labelWeek: 'Dec 23',
-						labelYear: '2016',
 						likes: null,
 						period: '2016-12-23',
 						posts: null,
@@ -1870,6 +1859,7 @@ describe( 'utils', () => {
 				const parsedData = normalizers.statsVisits( {
 					fields: [ 'period', 'views', 'visitors' ],
 					data: [ [ '2016W11W07', 0, 0 ], [ '2016W10W31', 10, 6 ] ],
+					unit: 'day',
 				} );
 
 				expect( parsedData ).to.eql( [
@@ -1877,9 +1867,6 @@ describe( 'utils', () => {
 						classNames: [],
 						comments: null,
 						labelDay: 'Nov 7',
-						labelMonth: 'Nov',
-						labelWeek: 'Nov 7',
-						labelYear: '2016',
 						likes: null,
 						period: '2016-11-07',
 						posts: null,
@@ -1891,9 +1878,6 @@ describe( 'utils', () => {
 						classNames: [],
 						comments: null,
 						labelDay: 'Oct 31',
-						labelMonth: 'Oct',
-						labelWeek: 'Oct 31',
-						labelYear: '2016',
 						likes: null,
 						period: '2016-10-31',
 						posts: null,
