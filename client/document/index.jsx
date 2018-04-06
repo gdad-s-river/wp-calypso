@@ -185,8 +185,8 @@ class Document extends React.Component {
 						 `,
 						} }
 					/>
-					{ // Load GA only if enabled in the config.
-					appConfig( 'google_analytics_enabled' ) && (
+					{ // Load GA only if enabled as a feature
+					appConfig.isEnabled( 'google-analytics' ) && (
 						<script
 							async={ true }
 							type="text/javascript"
