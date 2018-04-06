@@ -303,8 +303,8 @@ export function parseStoreStatsReferrers( payload ) {
 	}
 	const { fields } = payload;
 	return payload.data.map( record => {
-		const parsedDate = moment( record.date ).locale( 'en' );
-		const parsedLocalizedDate = moment( record.date );
+		const parsedDate = parseUnitPeriods( payload.unit, record.date ).locale( 'en' );
+		const parsedLocalizedDate = parseUnitPeriods( payload.unit, record.date );
 		return {
 			date: record.date,
 			data: record.data.map( referrer => {
